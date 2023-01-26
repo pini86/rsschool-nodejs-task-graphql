@@ -1,23 +1,23 @@
-import { FastifyPluginAsyncJsonSchemaToTs } from "@fastify/type-provider-json-schema-to-ts";
-import { idParamSchema } from "../../utils/reusedSchemas";
+import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts';
+import { idParamSchema } from '../../utils/reusedSchemas';
 import {
   createUserBodySchema,
   changeUserBodySchema,
   subscribeBodySchema,
-} from "./schemas";
-import type { UserEntity } from "../../utils/DB/entities/DBUsers";
-import { HttpError } from "@fastify/sensible/lib/httpError";
-import validator from "validator";
+} from './schemas';
+import type { UserEntity } from '../../utils/DB/entities/DBUsers';
+import { HttpError } from '@fastify/sensible/lib/httpError';
+import validator from 'validator';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
 ): Promise<void> => {
-  fastify.get("/", async function (request, reply): Promise<UserEntity[]> {
+  fastify.get('/', async function (request, reply): Promise<UserEntity[]> {
     return fastify.db.users.findMany();
   });
 
   fastify.get(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: idParamSchema,
@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.notFound();
       }
       const user = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       return user ? user : fastify.httpErrors.notFound();
@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.post(
-    "/",
+    '/',
     {
       schema: {
         body: createUserBodySchema,
@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.delete(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: idParamSchema,
@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const user = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       if (!user) {
@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       }
 
       const subsUsers = await fastify.db.users.findMany({
-        key: "subscribedToUserIds",
+        key: 'subscribedToUserIds',
         inArray: request.params.id,
       });
 
@@ -89,7 +89,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       });
 
       const posts = await fastify.db.posts.findMany({
-        key: "userId",
+        key: 'userId',
         equals: request.params.id,
       });
 
@@ -97,12 +97,21 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         await fastify.db.posts.delete(post.id);
       });
 
+      const profile = await fastify.db.profiles.findOne({
+        key: 'userId',
+        equals: request.params.id,
+      });
+
+      if (profile) {
+        await fastify.db.profiles.delete(profile.id);
+      }
+
       return fastify.db.users.delete(request.params.id);
     }
   );
 
   fastify.post(
-    "/:id/subscribeTo",
+    '/:id/subscribeTo',
     {
       schema: {
         body: subscribeBodySchema,
@@ -117,11 +126,11 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const user = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       const userSubs = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.body.userId,
       });
       if (!user || !userSubs) {
@@ -139,7 +148,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.post(
-    "/:id/unsubscribeFrom",
+    '/:id/unsubscribeFrom',
     {
       schema: {
         body: subscribeBodySchema,
@@ -154,11 +163,11 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const user = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       const userSubs = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.body.userId,
       });
       if (
@@ -180,7 +189,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.patch(
-    "/:id",
+    '/:id',
     {
       schema: {
         body: changeUserBodySchema,
@@ -192,7 +201,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const user = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       if (!user) {

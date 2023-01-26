@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         key: 'id',
         equals: request.params.id,
       });
-      console.log('profile.city ', profile?.city);
+
       return profile ? profile : fastify.httpErrors.notFound();
     }
   );
@@ -87,11 +87,11 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       if (!validator.isUUID(request.params.id)) {
         return fastify.httpErrors.badRequest();
       }
-      const userTestExist = await fastify.db.users.findOne({
+      const profileTestExist = await fastify.db.profiles.findOne({
         key: 'id',
         equals: request.params.id,
       });
-      if (!userTestExist) {
+      if (!profileTestExist) {
         return fastify.httpErrors.notFound();
       }
       return fastify.db.profiles.delete(request.params.id);
@@ -112,8 +112,6 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         equals: request.params.id,
       });
 
-      console.log('################ patched profile ', profileTestExist?.city);
-      debugger;
       if (!profileTestExist) {
         return fastify.httpErrors.badRequest();
       }
