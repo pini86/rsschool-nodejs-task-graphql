@@ -88,8 +88,25 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<PostEntity> {
-      return {} as PostEntity;
+    async function (request, reply): Promise<PostEntity | HttpError> {
+      if (!validator.isUUID(request.params.id)) {
+        return fastify.httpErrors.badRequest();
+      }
+      const postTestExist = await fastify.db.posts.findOne({
+        key: "id",
+        equals: request.params.id,
+      });
+
+      if (!postTestExist) {
+        return fastify.httpErrors.badRequest();
+      }
+
+      const { title = postTestExist.title, content = postTestExist.content } =
+        request.body;
+      return fastify.db.posts.change(request.params.id, {
+        title,
+        content,
+      });
     }
   );
 };

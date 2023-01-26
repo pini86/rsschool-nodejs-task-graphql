@@ -88,6 +88,15 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         });
       });
 
+      const posts = await fastify.db.posts.findMany({
+        key: "userId",
+        equals: request.params.id,
+      });
+
+      posts.forEach(async (post) => {
+        await fastify.db.posts.delete(post.id);
+      });
+
       return fastify.db.users.delete(request.params.id);
     }
   );

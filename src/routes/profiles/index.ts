@@ -1,19 +1,19 @@
-import { FastifyPluginAsyncJsonSchemaToTs } from "@fastify/type-provider-json-schema-to-ts";
-import { idParamSchema } from "../../utils/reusedSchemas";
-import { createProfileBodySchema, changeProfileBodySchema } from "./schema";
-import type { ProfileEntity } from "../../utils/DB/entities/DBProfiles";
-import { HttpError } from "@fastify/sensible/lib/httpError";
-import validator from "validator";
+import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts';
+import { idParamSchema } from '../../utils/reusedSchemas';
+import { createProfileBodySchema, changeProfileBodySchema } from './schema';
+import type { ProfileEntity } from '../../utils/DB/entities/DBProfiles';
+import { HttpError } from '@fastify/sensible/lib/httpError';
+import validator from 'validator';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
 ): Promise<void> => {
-  fastify.get("/", async function (request, reply): Promise<ProfileEntity[]> {
+  fastify.get('/', async function (request, reply): Promise<ProfileEntity[]> {
     return fastify.db.profiles.findMany();
   });
 
   fastify.get(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: idParamSchema,
@@ -24,15 +24,16 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.notFound();
       }
       const profile = await fastify.db.profiles.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
+      console.log('profile.city ', profile?.city);
       return profile ? profile : fastify.httpErrors.notFound();
     }
   );
 
   fastify.post(
-    "/",
+    '/',
     {
       schema: {
         body: createProfileBodySchema,
@@ -52,11 +53,14 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         userId,
         memberTypeId,
       } = request.body;
-      const userTestExist = await fastify.db.users.findOne({
-        key: "id",
+      const profileTestExist = await fastify.db.profiles.findOne({
+        key: 'userId',
         equals: userId,
       });
-      if (userTestExist || memberTypeId !== ("basic" || "business")) {
+      if (
+        profileTestExist ||
+        !(memberTypeId === 'basic' || memberTypeId === 'business')
+      ) {
         return fastify.httpErrors.badRequest();
       }
       return fastify.db.profiles.create({
@@ -73,7 +77,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.delete(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: idParamSchema,
@@ -84,7 +88,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const userTestExist = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       if (!userTestExist) {
@@ -95,7 +99,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.patch(
-    "/:id",
+    '/:id',
     {
       schema: {
         body: changeProfileBodySchema,
@@ -103,14 +107,13 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       },
     },
     async function (request, reply): Promise<ProfileEntity | HttpError> {
-      if (!validator.isUUID(request.params.id)) {
-        return fastify.httpErrors.badRequest();
-      }
       const profileTestExist = await fastify.db.profiles.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
-      console.log("################ patched user ", profileTestExist);
+
+      console.log('################ patched profile ', profileTestExist?.city);
+      debugger;
       if (!profileTestExist) {
         return fastify.httpErrors.badRequest();
       }
