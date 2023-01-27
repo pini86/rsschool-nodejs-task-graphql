@@ -11,6 +11,7 @@ import { typeUserGraphQL } from './types/typeUserGraphQL';
 import { typePostGraphQL } from './types/typePostGraphQL';
 import { typeProfileGraphQL } from './types/typeProfileGraphQL';
 import { typeMemberTypeGraphQL } from './types/typeMemberTypeGraphQL';
+import { typeUserWithAllSpecGraphQL } from './types/typeUserWithAllSpecGraphQL';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -23,11 +24,12 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       },
     },
     async function (request, reply) {
+      const userWithAllSpecGraphQL = await typeUserWithAllSpecGraphQL(fastify);
       const schema = new GraphQLSchema({
         query: new GraphQLObjectType({
-          name: 'RootQueryType',
+          name: 'Query',
           fields: {
-            getUser: {
+            User: {
               type: typeUserGraphQL,
               args: {
                 id: { type: GraphQLID },
@@ -40,13 +42,13 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
                 return user ? user : fastify.httpErrors.notFound();
               },
             },
-            getUsers: {
+            Users: {
               type: new GraphQLList(typeUserGraphQL),
               resolve() {
                 return fastify.db.users.findMany();
               },
             },
-            getPost: {
+            Post: {
               type: typePostGraphQL,
               args: {
                 id: { type: GraphQLID },
@@ -59,13 +61,13 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
                 return post ? post : fastify.httpErrors.notFound();
               },
             },
-            getPosts: {
+            Posts: {
               type: new GraphQLList(typePostGraphQL),
               async resolve() {
                 return fastify.db.posts.findMany();
               },
             },
-            getProfile: {
+            Profile: {
               type: typeProfileGraphQL,
               args: {
                 id: { type: GraphQLID },
@@ -78,13 +80,13 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
                 return post ? post : fastify.httpErrors.notFound();
               },
             },
-            getProfiles: {
+            Profiles: {
               type: new GraphQLList(typeProfileGraphQL),
               async resolve() {
                 return fastify.db.profiles.findMany();
               },
             },
-            getMemberType: {
+            MemberType: {
               type: typeMemberTypeGraphQL,
               args: {
                 id: { type: GraphQLID },
@@ -97,22 +99,39 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
                 return memberType ? memberType : fastify.httpErrors.notFound();
               },
             },
-            getMemberTypes: {
+            MemberTypes: {
               type: new GraphQLList(typeMemberTypeGraphQL),
               async resolve() {
                 return fastify.db.memberTypes.findMany();
+              },
+            },
+            UserWithAllSpec: {
+              type: userWithAllSpecGraphQL,
+              args: {
+                id: { type: GraphQLID },
+              },
+              async resolve(_, args) {
+                const user = await fastify.db.users.findOne({
+                  key: 'id',
+                  equals: args.id,
+                });
+                return user ? user : fastify.httpErrors.notFound();
+              },
+            },
+            UsersWithAllSpec: {
+              type: new GraphQLList(userWithAllSpecGraphQL),
+              async resolve() {
+                return fastify.db.users.findMany();
               },
             },
           },
         }),
       });
 
-      const resultGraphQL = await graphql({
+      return graphql({
         schema,
         source: request.body.query as string,
       });
-
-      return resultGraphQL;
     }
   );
 };
