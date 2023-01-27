@@ -8,6 +8,7 @@ import {
   GraphQLSchema,
 } from 'graphql';
 import { typeUserGraphQL } from './types/typeGraphQLUser';
+import { typePostGraphQL } from './types/typePostGraphQL';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -41,6 +42,25 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
               type: new GraphQLList(typeUserGraphQL),
               resolve() {
                 return fastify.db.users.findMany();
+              },
+            },
+            getPost: {
+              type: typePostGraphQL,
+              args: {
+                id: { type: GraphQLID },
+              },
+              async resolve(_, args) {
+                const post = await fastify.db.posts.findOne({
+                  key: 'id',
+                  equals: args.id,
+                });
+                return post ? post : fastify.httpErrors.notFound();
+              },
+            },
+            getPosts: {
+              type: new GraphQLList(typePostGraphQL),
+              async resolve() {
+                return fastify.db.posts.findMany();
               },
             },
           },
