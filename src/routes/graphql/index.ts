@@ -1,5 +1,13 @@
 import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts';
 import { graphqlBodySchema } from './schema';
+import {
+  graphql,
+  GraphQLID,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLSchema,
+} from 'graphql';
+import { typeUserGraphQL } from './types/typeGraphQLUser';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -11,7 +19,41 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         body: graphqlBodySchema,
       },
     },
-    async function (request, reply) {}
+    async function (request, reply) {
+      const schema = new GraphQLSchema({
+        query: new GraphQLObjectType({
+          name: 'RootQueryType',
+          fields: {
+            getUser: {
+              type: typeUserGraphQL,
+              args: {
+                id: { type: GraphQLID },
+              },
+              async resolve(_, args) {
+                const user = await fastify.db.users.findOne({
+                  key: 'id',
+                  equals: args.id,
+                });
+                return user ? user : fastify.httpErrors.notFound();
+              },
+            },
+            getUsers: {
+              type: new GraphQLList(typeUserGraphQL),
+              resolve() {
+                return fastify.db.users.findMany();
+              },
+            },
+          },
+        }),
+      });
+
+      const resultGraphQL = await graphql({
+        schema,
+        source: request.body.query as string,
+      });
+
+      return resultGraphQL;
+    }
   );
 };
 
