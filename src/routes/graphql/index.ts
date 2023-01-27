@@ -12,6 +12,7 @@ import { typePostGraphQL } from './types/typePostGraphQL';
 import { typeProfileGraphQL } from './types/typeProfileGraphQL';
 import { typeMemberTypeGraphQL } from './types/typeMemberTypeGraphQL';
 import { typeUserWithAllSpecGraphQL } from './types/typeUserWithAllSpecGraphQL';
+import { typeUserWithSubscPosts } from './types/typeUserWithSubscPosts';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -25,6 +26,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
     },
     async function (request, reply) {
       const userWithAllSpecGraphQL = await typeUserWithAllSpecGraphQL(fastify);
+      const userWithSubscPosts = await typeUserWithSubscPosts(fastify);
       const schema = new GraphQLSchema({
         query: new GraphQLObjectType({
           name: 'Query',
@@ -122,6 +124,19 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
               type: new GraphQLList(userWithAllSpecGraphQL),
               async resolve() {
                 return fastify.db.users.findMany();
+              },
+            },
+            UserWithSubscPosts: {
+              type: userWithSubscPosts,
+              args: {
+                id: { type: GraphQLID },
+              },
+              async resolve(_, args) {
+                const user = await fastify.db.users.findOne({
+                  key: 'id',
+                  equals: args.id,
+                });
+                return user ? user : fastify.httpErrors.notFound();
               },
             },
           },
