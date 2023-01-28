@@ -14,6 +14,7 @@ import { typeMemberTypeGraphQL } from './types/typeMemberTypeGraphQL';
 import { typeUserWithAllSpecGraphQL } from './types/typeUserWithAllSpecGraphQL';
 import { typeUserWithSubscPostsGraphQL } from './types/typeUserWithSubscPosts';
 import { typeUsersSubscWithProfileGraphQL } from './types/typeUsersSubscProfilesGraphQL';
+import { typeUserWithSubscGraphQL } from './types/typeUserWithSubscGraphQL';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
@@ -30,6 +31,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       const userWithSubscPosts = await typeUserWithSubscPostsGraphQL(fastify);
       const usersSubscWithProfileGraphQL =
         await typeUsersSubscWithProfileGraphQL(fastify);
+      const userWithSubscGraphQL = await typeUserWithSubscGraphQL(fastify);
       const schema = new GraphQLSchema({
         query: new GraphQLObjectType({
           name: 'Query',
@@ -146,6 +148,12 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
               type: new GraphQLList(usersSubscWithProfileGraphQL),
               async resolve() {
                 return await fastify.db.users.findMany();
+              },
+            },
+            UsersWithSubsc: {
+              type: new GraphQLList(userWithSubscGraphQL),
+              async resolve() {
+                return fastify.db.users.findMany();
               },
             },
           },
