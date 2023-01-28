@@ -19,7 +19,7 @@ const rootQuery = async (
     fastify
   );
   const userWithSubscGraphQL = await typeUserWithSubscGraphQL(fastify);
-  
+
   return new GraphQLObjectType({
     name: 'Query',
     fields: {
@@ -33,7 +33,7 @@ const rootQuery = async (
             key: 'id',
             equals: args.id,
           });
-          return user ? user : fastify.httpErrors.notFound();
+          return user ? user : fastify.httpErrors.notFound('User not found');
         },
       },
       Users: {
@@ -52,7 +52,7 @@ const rootQuery = async (
             key: 'id',
             equals: args.id,
           });
-          return post ? post : fastify.httpErrors.notFound();
+          return post ? post : fastify.httpErrors.notFound('Post not found');
         },
       },
       Posts: {
@@ -71,7 +71,7 @@ const rootQuery = async (
             key: 'id',
             equals: args.id,
           });
-          return post ? post : fastify.httpErrors.notFound();
+          return post ? post : fastify.httpErrors.notFound('Profile not found');
         },
       },
       Profiles: {
@@ -91,7 +91,9 @@ const rootQuery = async (
               key: 'id',
               equals: args.id,
             });
-          return memberType ? memberType : fastify.httpErrors.notFound();
+          return memberType
+            ? memberType
+            : fastify.httpErrors.notFound('Member Type not found');
         },
       },
       MemberTypes: {
@@ -110,7 +112,7 @@ const rootQuery = async (
             key: 'id',
             equals: args.id,
           });
-          return user ? user : fastify.httpErrors.notFound();
+          return user ? user : fastify.httpErrors.notFound('User not found');
         },
       },
       UsersWithAllSpec: {
@@ -129,7 +131,7 @@ const rootQuery = async (
             key: 'id',
             equals: args.id,
           });
-          return user ? user : fastify.httpErrors.notFound();
+          return user ? user : fastify.httpErrors.notFound('User not found');
         },
       },
       UsersSubscWithProfile: {
