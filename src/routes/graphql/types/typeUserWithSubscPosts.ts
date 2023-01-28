@@ -5,9 +5,9 @@ import { typeUserGraphQL } from './typeUserGraphQL';
 import { typePostGraphQL } from './typePostGraphQL';
 
 //2.6. Get user by id with his subscribedToUser, posts.
-const typeUserWithSubscPosts = async (fastify: FastifyInstance) => {
+const typeUserWithSubscPostsGraphQL = async (fastify: FastifyInstance) => {
   const userWithSubscPosts = new GraphQLObjectType({
-    name: 'UserWithSubscPosts',
+    name: 'UserWithSubscPostsGraphQL',
     fields: {
       user: {
         type: typeUserGraphQL,
@@ -32,11 +32,10 @@ const typeUserWithSubscPosts = async (fastify: FastifyInstance) => {
       posts: {
         type: new GraphQLList(typePostGraphQL),
         resolve: async (userCurrent: UserEntity) => {
-          const posts = await fastify.db.posts.findMany({
+          return fastify.db.posts.findMany({
             key: 'userId',
             equals: userCurrent.id,
           });
-          return posts;
         },
       },
     },
@@ -45,4 +44,4 @@ const typeUserWithSubscPosts = async (fastify: FastifyInstance) => {
   return userWithSubscPosts;
 };
 
-export { typeUserWithSubscPosts };
+export { typeUserWithSubscPostsGraphQL };

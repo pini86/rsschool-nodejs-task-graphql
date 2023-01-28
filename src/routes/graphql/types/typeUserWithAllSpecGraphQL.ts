@@ -7,7 +7,7 @@ import { typeMemberTypeGraphQL } from './typeMemberTypeGraphQL';
 import { typeUserGraphQL } from './typeUserGraphQL';
 
 const typeUserWithAllSpecGraphQL = async (fastify: FastifyInstance) => {
-  const typeUserWithAllSpecGraphQLType = new GraphQLObjectType({
+  const userWithAllSpec = new GraphQLObjectType({
     name: 'typeUserWithAllSpecGraphQL',
     fields: () => ({
       user: {
@@ -53,7 +53,7 @@ const typeUserWithAllSpecGraphQL = async (fastify: FastifyInstance) => {
     }),
   });
 
-  return typeUserWithAllSpecGraphQLType;
+  return userWithAllSpec;
 };
 
 export { typeUserWithAllSpecGraphQL };
