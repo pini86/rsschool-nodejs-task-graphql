@@ -1,19 +1,19 @@
-import { FastifyPluginAsyncJsonSchemaToTs } from "@fastify/type-provider-json-schema-to-ts";
-import { idParamSchema } from "../../utils/reusedSchemas";
-import { createPostBodySchema, changePostBodySchema } from "./schema";
-import type { PostEntity } from "../../utils/DB/entities/DBPosts";
-import { HttpError } from "@fastify/sensible/lib/httpError";
-import validator from "validator";
+import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-schema-to-ts';
+import { idParamSchema } from '../../utils/reusedSchemas';
+import { createPostBodySchema, changePostBodySchema } from './schema';
+import type { PostEntity } from '../../utils/DB/entities/DBPosts';
+import { HttpError } from '@fastify/sensible/lib/httpError';
+import validator from 'validator';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   fastify
 ): Promise<void> => {
-  fastify.get("/", async function (request, reply): Promise<PostEntity[]> {
+  fastify.get('/', async function (request, reply): Promise<PostEntity[]> {
     return fastify.db.posts.findMany();
   });
 
   fastify.get(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: idParamSchema,
@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.notFound();
       }
       const post = await fastify.db.posts.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       return post ? post : fastify.httpErrors.notFound();
@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.post(
-    "/",
+    '/',
     {
       schema: {
         body: createPostBodySchema,
@@ -44,7 +44,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const userTestExist = await fastify.db.users.findOne({
-        key: "id",
+        key: 'id',
         equals: userId,
       });
       if (!userTestExist) {
@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.delete(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: idParamSchema,
@@ -70,7 +70,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const postTestExist = await fastify.db.posts.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
       if (!postTestExist) {
@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
   );
 
   fastify.patch(
-    "/:id",
+    '/:id',
     {
       schema: {
         body: changePostBodySchema,
@@ -93,7 +93,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         return fastify.httpErrors.badRequest();
       }
       const postTestExist = await fastify.db.posts.findOne({
-        key: "id",
+        key: 'id',
         equals: request.params.id,
       });
 

@@ -7,7 +7,7 @@ import { typeUserGraphQL } from './typeUserGraphQL';
 //2.5. Get users with their userSubscribedTo, profile.
 const typeUsersSubscWithProfileGraphQL = async (fastify: FastifyInstance) => {
   const userSubscWithProfile = new GraphQLObjectType({
-    name: 'GraphQLUserWithProfile',
+    name: 'UserWithProfileGraphQL',
     fields: {
       user: {
         type: typeUserGraphQL,
