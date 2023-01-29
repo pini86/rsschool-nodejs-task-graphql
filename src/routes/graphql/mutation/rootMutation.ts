@@ -288,30 +288,65 @@ const rootMutation = async (
           subscribeToUserId: { type: new GraphQLNonNull(GraphQLID) },
         },
         async resolve(_, args) {
-          if (
-            !validator.isUUID(args.id) ||
-            !validator.isUUID(args.subscribeToUserId)
-          ) {
+          const { id, subscribeToUserId } = args;
+          if (!validator.isUUID(id) || !validator.isUUID(subscribeToUserId)) {
             return fastify.httpErrors.badRequest('Wrong ID');
           }
           const user = await fastify.db.users.findOne({
             key: 'id',
-            equals: args.id,
+            equals: id,
           });
           const userSubs = await fastify.db.users.findOne({
             key: 'id',
-            equals: args.subscribeToUserId,
+            equals: subscribeToUserId,
           });
           if (!user || !userSubs) {
             return fastify.httpErrors.badRequest('User not found');
           }
 
-          const listSubscribe = new Set(userSubs.subscribedToUserIds).add(
-            args.id
+          const listSubscribe = new Set(userSubs.subscribedToUserIds).add(id);
+
+          return fastify.db.users.change(subscribeToUserId, {
+            subscribedToUserIds: Array.from(listSubscribe),
+          });
+        },
+      },
+      unsubscribeFromUser: {
+        type: typeUserGraphQL,
+        args: {
+          id: { type: new GraphQLNonNull(GraphQLID) },
+          unsubscribeFromUserId: { type: new GraphQLNonNull(GraphQLID) },
+        },
+        async resolve(_, args) {
+          const { id, unsubscribeFromUserId } = args;
+          if (
+            !validator.isUUID(id) ||
+            !validator.isUUID(unsubscribeFromUserId)
+          ) {
+            return fastify.httpErrors.badRequest('Wrong ID');
+          }
+          const user = await fastify.db.users.findOne({
+            key: 'id',
+            equals: id,
+          });
+          const userSubs = await fastify.db.users.findOne({
+            key: 'id',
+            equals: unsubscribeFromUserId,
+          });
+          if (
+            !user ||
+            !userSubs ||
+            !userSubs.subscribedToUserIds.includes(user.id)
+          ) {
+            return fastify.httpErrors.badRequest('User not found');
+          }
+
+          const subscribedToUserIds = userSubs.subscribedToUserIds.filter(
+            (item) => item !== id
           );
 
-          return fastify.db.users.change(args.subscribeToUserId, {
-            subscribedToUserIds: Array.from(listSubscribe),
+          return fastify.db.users.change(unsubscribeFromUserId, {
+            subscribedToUserIds,
           });
         },
       },
