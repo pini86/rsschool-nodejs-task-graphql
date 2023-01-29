@@ -9,12 +9,13 @@ import {
 import { typeUserGraphQL } from '../types/typeUserGraphQL';
 import { typeProfileGraphQL } from '../types/typeProfileGraphQL';
 import { typePostGraphQL } from '../types/typePostGraphQL';
+import { typeMemberTypeGraphQL } from '../types/typeMemberTypeGraphQL';
 import { FastifyInstance } from 'fastify';
 import validator from 'validator';
 
 /* 
 
-import { typeMemberTypeGraphQL } from '../types/typeMemberTypeGraphQL';
+
 import { typeUserWithAllSpecGraphQL } from '../types/typeUserWithAllSpecGraphQL';
 import { typeUserWithSubscPostsGraphQL } from '../types/typeUserWithSubscPosts';
 import { typeUsersSubscWithProfileGraphQL } from '../types/typeUsersSubscProfilesGraphQL';
@@ -251,6 +252,32 @@ const rootMutation = async (
           return fastify.db.posts.change(id, {
             title,
             content,
+          });
+        },
+      },
+      updateMemberType: {
+        type: typeMemberTypeGraphQL,
+        args: {
+          id: { type: new GraphQLNonNull(GraphQLID) },
+          discount: { type: GraphQLInt },
+          monthPostsLimit: { type: GraphQLInt },
+        },
+        async resolve(_, args) {
+          const memberTypeId = await fastify.db.memberTypes.findOne({
+            key: 'id',
+            equals: args.id,
+          });
+          if (!memberTypeId) {
+            return fastify.httpErrors.badRequest('Wrong Member Type');
+          }
+          const {
+            id,
+            discount = memberTypeId.discount,
+            monthPostsLimit = memberTypeId.monthPostsLimit,
+          } = args;
+          return fastify.db.memberTypes.change(id, {
+            discount,
+            monthPostsLimit,
           });
         },
       },
