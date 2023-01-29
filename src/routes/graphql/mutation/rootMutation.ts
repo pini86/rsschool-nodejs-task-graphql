@@ -162,6 +162,68 @@ const rootMutation = async (
           });
         },
       },
+      updateProfile: {
+        type: typeProfileGraphQL,
+        args: {
+          userId: { type: new GraphQLNonNull(GraphQLID) },
+          memberTypeId: { type: new GraphQLNonNull(GraphQLString) },
+          avatar: { type: new GraphQLNonNull(GraphQLString) },
+          sex: { type: new GraphQLNonNull(GraphQLString) },
+          birthday: { type: new GraphQLNonNull(GraphQLInt) },
+          country: { type: new GraphQLNonNull(GraphQLString) },
+          street: { type: new GraphQLNonNull(GraphQLString) },
+          city: { type: new GraphQLNonNull(GraphQLString) },
+        },
+        // resolve: async (_, args) => updateProfileFromInput(args.id, args.variables, fastify),
+        async resolve(_, args) {
+          const {
+            userId,
+            memberTypeId,
+            avatar,
+            sex,
+            birthday,
+            country,
+            street,
+            city,
+          } = args;
+          const user = await fastify.db.users.findOne({
+            key: 'id',
+            equals: userId,
+          });
+
+          if (!user) {
+            return fastify.httpErrors.notFound('User not found');
+          }
+
+          const memberType = await fastify.db.memberTypes.findOne({
+            key: 'id',
+            equals: memberTypeId,
+          });
+
+          if (!memberType) {
+            return fastify.httpErrors.badRequest('Wrong Member Type');
+          }
+
+          const checkProfile = await fastify.db.profiles.findOne({
+            key: 'userId',
+            equals: userId,
+          });
+
+          if (!checkProfile) {
+            return fastify.httpErrors.badRequest('Profile not found');
+          }
+
+          return fastify.db.profiles.change(userId, {
+            memberTypeId,
+            avatar,
+            sex,
+            birthday,
+            country,
+            street,
+            city,
+          });
+        },
+      },
     },
   });
 };
