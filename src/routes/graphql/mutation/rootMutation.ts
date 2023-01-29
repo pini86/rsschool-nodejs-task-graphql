@@ -281,6 +281,40 @@ const rootMutation = async (
           });
         },
       },
+      subscribeToUser: {
+        type: typeUserGraphQL,
+        args: {
+          id: { type: new GraphQLNonNull(GraphQLID) },
+          subscribeToUserId: { type: new GraphQLNonNull(GraphQLID) },
+        },
+        async resolve(_, args) {
+          if (
+            !validator.isUUID(args.id) ||
+            !validator.isUUID(args.subscribeToUserId)
+          ) {
+            return fastify.httpErrors.badRequest('Wrong ID');
+          }
+          const user = await fastify.db.users.findOne({
+            key: 'id',
+            equals: args.id,
+          });
+          const userSubs = await fastify.db.users.findOne({
+            key: 'id',
+            equals: args.subscribeToUserId,
+          });
+          if (!user || !userSubs) {
+            return fastify.httpErrors.badRequest('User not found');
+          }
+
+          const listSubscribe = new Set(userSubs.subscribedToUserIds).add(
+            args.id
+          );
+
+          return fastify.db.users.change(args.subscribeToUserId, {
+            subscribedToUserIds: Array.from(listSubscribe),
+          });
+        },
+      },
     },
   });
 };
