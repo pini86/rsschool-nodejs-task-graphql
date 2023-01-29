@@ -174,7 +174,6 @@ const rootMutation = async (
           street: { type: new GraphQLNonNull(GraphQLString) },
           city: { type: new GraphQLNonNull(GraphQLString) },
         },
-        // resolve: async (_, args) => updateProfileFromInput(args.id, args.variables, fastify),
         async resolve(_, args) {
           const {
             userId,
@@ -221,6 +220,37 @@ const rootMutation = async (
             country,
             street,
             city,
+          });
+        },
+      },
+      updatePost: {
+        type: typePostGraphQL,
+        args: {
+          id: { type: new GraphQLNonNull(GraphQLID) },
+          title: { type: new GraphQLNonNull(GraphQLString) },
+          content: { type: new GraphQLNonNull(GraphQLString) },
+        },
+        async resolve(_, args) {
+          if (!validator.isUUID(args.id)) {
+            return fastify.httpErrors.badRequest('Wrong ID');
+          }
+          const postTestExist = await fastify.db.posts.findOne({
+            key: 'id',
+            equals: args.id,
+          });
+
+          if (!postTestExist) {
+            return fastify.httpErrors.badRequest('Post not found');
+          }
+
+          const {
+            id,
+            title = postTestExist.title,
+            content = postTestExist.content,
+          } = args;
+          return fastify.db.posts.change(id, {
+            title,
+            content,
           });
         },
       },
