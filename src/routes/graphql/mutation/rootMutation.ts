@@ -10,6 +10,8 @@ import { typeUserGraphQL } from '../types/typeUserGraphQL';
 import { typeProfileGraphQL } from '../types/typeProfileGraphQL';
 import { typePostGraphQL } from '../types/typePostGraphQL';
 import { FastifyInstance } from 'fastify';
+import validator from 'validator';
+
 /* 
 
 import { typeMemberTypeGraphQL } from '../types/typeMemberTypeGraphQL';
@@ -125,6 +127,38 @@ const rootMutation = async (
             userId,
             title,
             content,
+          });
+        },
+      },
+      updateUser: {
+        type: typeUserGraphQL,
+        args: {
+          id: { type: new GraphQLNonNull(GraphQLID) },
+          firstName: { type: new GraphQLNonNull(GraphQLString) },
+          lastName: { type: new GraphQLNonNull(GraphQLString) },
+          email: { type: new GraphQLNonNull(GraphQLString) },
+        },
+        async resolve(_, args) {
+          if (!validator.isUUID(args.id)) {
+            return fastify.httpErrors.badRequest();
+          }
+          const user = await fastify.db.users.findOne({
+            key: 'id',
+            equals: args.id,
+          });
+          if (!user) {
+            return fastify.httpErrors.notFound();
+          }
+
+          const {
+            firstName = user.firstName,
+            lastName = user.lastName,
+            email = user.email,
+          } = args;
+          return fastify.db.users.change(args.id, {
+            firstName,
+            lastName,
+            email,
           });
         },
       },
