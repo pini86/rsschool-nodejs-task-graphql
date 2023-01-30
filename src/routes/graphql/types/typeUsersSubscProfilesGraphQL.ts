@@ -8,7 +8,7 @@ import { typeUserGraphQL } from './typeUserGraphQL';
 const typeUsersSubscWithProfileGraphQL = async (fastify: FastifyInstance) => {
   const userSubscWithProfile = new GraphQLObjectType({
     name: 'UserWithProfileGraphQL',
-    fields: {
+    fields: () => ({
       user: {
         type: typeUserGraphQL,
         resolve: async (userCurrent: UserEntity) => userCurrent,
@@ -31,7 +31,7 @@ const typeUsersSubscWithProfileGraphQL = async (fastify: FastifyInstance) => {
           });
         },
       },
-    },
+    }),
   });
 
   return userSubscWithProfile;

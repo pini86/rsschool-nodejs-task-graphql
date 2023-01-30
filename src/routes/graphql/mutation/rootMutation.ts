@@ -1,7 +1,6 @@
 import {
   GraphQLID,
   GraphQLInt,
-  // GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
@@ -12,15 +11,6 @@ import { typePostGraphQL } from '../types/typePostGraphQL';
 import { typeMemberTypeGraphQL } from '../types/typeMemberTypeGraphQL';
 import { FastifyInstance } from 'fastify';
 import validator from 'validator';
-
-/* 
-
-
-import { typeUserWithAllSpecGraphQL } from '../types/typeUserWithAllSpecGraphQL';
-import { typeUserWithSubscPostsGraphQL } from '../types/typeUserWithSubscPosts';
-import { typeUsersSubscWithProfileGraphQL } from '../types/typeUsersSubscProfilesGraphQL';
-import { typeUserWithSubscGraphQL } from '../types/typeUserWithSubscGraphQL';
-import { MemberTypeEntity } from '../../../utils/DB/entities/DBMemberTypes'; */
 
 const rootMutation = async (
   fastify: FastifyInstance

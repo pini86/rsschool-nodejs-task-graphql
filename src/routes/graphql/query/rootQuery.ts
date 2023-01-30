@@ -13,7 +13,7 @@ import { MemberTypeEntity } from '../../../utils/DB/entities/DBMemberTypes';
 const rootQuery = async (
   fastify: FastifyInstance
 ): Promise<GraphQLObjectType> => {
-  const userWithAllSpecGraphQL = await typeUserWithAllSpecGraphQL(fastify);
+
   const userWithSubscPosts = await typeUserWithSubscPostsGraphQL(fastify);
   const usersSubscWithProfileGraphQL = await typeUsersSubscWithProfileGraphQL(
     fastify
@@ -103,7 +103,7 @@ const rootQuery = async (
         },
       },
       UserWithAllSpec: {
-        type: userWithAllSpecGraphQL,
+        type: typeUserWithAllSpecGraphQL,
         args: {
           id: { type: GraphQLID },
         },
@@ -116,7 +116,7 @@ const rootQuery = async (
         },
       },
       UsersWithAllSpec: {
-        type: new GraphQLList(userWithAllSpecGraphQL),
+        type: new GraphQLList(typeUserWithAllSpecGraphQL),
         async resolve() {
           return fastify.db.users.findMany();
         },
